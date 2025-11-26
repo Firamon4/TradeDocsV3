@@ -7,8 +7,6 @@
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             lblRole = new Label();
             cmbRole = new ComboBox();
             lblDesc = new Label();
@@ -27,6 +25,9 @@
             btnDeleteField = new Button();
             btnOk = new Button();
             btnCancel = new Button();
+            lblFilter = new Label();
+            txtFilter = new TextBox();
+            chkFullSync = new CheckBox();
             grpSource.SuspendLayout();
             grpMap.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgv).BeginInit();
@@ -44,7 +45,6 @@
             // cmbRole
             // 
             cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbRole.FormattingEnabled = true;
             cmbRole.Location = new Point(100, 20);
             cmbRole.Name = "cmbRole";
             cmbRole.Size = new Size(280, 23);
@@ -128,29 +128,12 @@
             // 
             dgv.AllowUserToAddRows = false;
             dgv.BackgroundColor = Color.White;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dgv.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgv.Columns.AddRange(new DataGridViewColumn[] { colUse, colField, colSource });
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dgv.DefaultCellStyle = dataGridViewCellStyle2;
             dgv.Location = new Point(10, 55);
             dgv.Name = "dgv";
             dgv.RowHeadersVisible = false;
             dgv.Size = new Size(380, 185);
-            dgv.TabIndex = 2;
+            dgv.TabIndex = 0;
             // 
             // colUse
             // 
@@ -162,6 +145,7 @@
             // 
             colField.HeaderText = "Поле (App)";
             colField.Name = "colField";
+            colField.ReadOnly = true;
             colField.Width = 150;
             // 
             // colSource
@@ -177,7 +161,7 @@
             btnAddField.Location = new Point(10, 22);
             btnAddField.Name = "btnAddField";
             btnAddField.Size = new Size(120, 25);
-            btnAddField.TabIndex = 0;
+            btnAddField.TabIndex = 1;
             btnAddField.Text = "➕ Додати поле";
             btnAddField.UseVisualStyleBackColor = false;
             btnAddField.Click += btnAddField_Click;
@@ -189,7 +173,7 @@
             btnDeleteField.Location = new Point(140, 22);
             btnDeleteField.Name = "btnDeleteField";
             btnDeleteField.Size = new Size(120, 25);
-            btnDeleteField.TabIndex = 1;
+            btnDeleteField.TabIndex = 2;
             btnDeleteField.Text = "🗑 Видалити";
             btnDeleteField.UseVisualStyleBackColor = false;
             btnDeleteField.Click += btnDeleteField_Click;
@@ -199,10 +183,10 @@
             btnOk.BackColor = Color.SeaGreen;
             btnOk.FlatStyle = FlatStyle.Flat;
             btnOk.ForeColor = Color.White;
-            btnOk.Location = new Point(200, 450);
+            btnOk.Location = new Point(200, 540);
             btnOk.Name = "btnOk";
             btnOk.Size = new Size(90, 30);
-            btnOk.TabIndex = 6;
+            btnOk.TabIndex = 9;
             btnOk.Text = "Зберегти";
             btnOk.UseVisualStyleBackColor = false;
             btnOk.Click += btnOk_Click;
@@ -211,27 +195,54 @@
             // 
             btnCancel.BackColor = Color.LightGray;
             btnCancel.FlatStyle = FlatStyle.Flat;
-            btnCancel.Location = new Point(310, 450);
+            btnCancel.Location = new Point(310, 540);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(90, 30);
-            btnCancel.TabIndex = 7;
+            btnCancel.TabIndex = 10;
             btnCancel.Text = "Скасувати";
             btnCancel.UseVisualStyleBackColor = false;
             btnCancel.Click += btnCancel_Click;
             // 
+            // lblFilter
+            // 
+            lblFilter.AutoSize = true;
+            lblFilter.Location = new Point(20, 450);
+            lblFilter.Name = "lblFilter";
+            lblFilter.Size = new Size(204, 15);
+            lblFilter.TabIndex = 6;
+            lblFilter.Text = "Фільтр груп (ID батьків через кому):";
+            // 
+            // txtFilter
+            // 
+            txtFilter.Location = new Point(20, 470);
+            txtFilter.Name = "txtFilter";
+            txtFilter.Size = new Size(400, 23);
+            txtFilter.TabIndex = 7;
+            // 
+            // chkFullSync
+            // 
+            chkFullSync.AutoSize = true;
+            chkFullSync.ForeColor = Color.Black;
+            chkFullSync.Location = new Point(20, 500);
+            chkFullSync.Name = "chkFullSync";
+            chkFullSync.Size = new Size(378, 19);
+            chkFullSync.TabIndex = 8;
+            chkFullSync.Text = "Повна синхронізація (Очищати таблицю перед завантаженням)";
+            // 
             // MapEditForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(440, 500);
-            Controls.Add(btnCancel);
-            Controls.Add(btnOk);
-            Controls.Add(grpMap);
-            Controls.Add(grpSource);
-            Controls.Add(txtDesc);
-            Controls.Add(lblDesc);
-            Controls.Add(cmbRole);
+            ClientSize = new Size(440, 590);
             Controls.Add(lblRole);
+            Controls.Add(cmbRole);
+            Controls.Add(lblDesc);
+            Controls.Add(txtDesc);
+            Controls.Add(grpSource);
+            Controls.Add(grpMap);
+            Controls.Add(lblFilter);
+            Controls.Add(txtFilter);
+            Controls.Add(chkFullSync);
+            Controls.Add(btnOk);
+            Controls.Add(btnCancel);
             Font = new Font("Segoe UI", 9F);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -246,25 +257,16 @@
             ((System.ComponentModel.ISupportInitialize)dgv).EndInit();
             ResumeLayout(false);
             PerformLayout();
-
         }
-        private System.Windows.Forms.Label lblRole;
+
+        private System.Windows.Forms.Label lblRole, lblDesc, lblTable, lblVer, lblFilter;
         private System.Windows.Forms.ComboBox cmbRole;
-        private System.Windows.Forms.Label lblDesc;
-        private System.Windows.Forms.TextBox txtDesc;
-        private System.Windows.Forms.GroupBox grpSource;
-        private System.Windows.Forms.Label lblTable;
-        private System.Windows.Forms.TextBox txtTable;
-        private System.Windows.Forms.Label lblVer;
-        private System.Windows.Forms.TextBox txtVer;
-        private System.Windows.Forms.GroupBox grpMap;
+        private System.Windows.Forms.TextBox txtDesc, txtTable, txtVer, txtFilter;
+        private System.Windows.Forms.CheckBox chkFullSync;
+        private System.Windows.Forms.GroupBox grpSource, grpMap;
         private System.Windows.Forms.DataGridView dgv;
         private System.Windows.Forms.DataGridViewCheckBoxColumn colUse;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colField;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colSource;
-        private System.Windows.Forms.Button btnAddField;
-        private System.Windows.Forms.Button btnDeleteField;
-        private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colField, colSource;
+        private System.Windows.Forms.Button btnAddField, btnDeleteField, btnOk, btnCancel;
     }
 }

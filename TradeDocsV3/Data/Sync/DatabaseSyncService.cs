@@ -40,12 +40,25 @@ public class DatabaseSyncService
 
             try
             {
-                // КРОК 1: Перевірка структури. Якщо змінилася - DROP & CREATE
+                // 1. Перевірка схеми (Drop & Recreate якщо схема змінилася)
                 bool structureChanged = EnsureTargetTableStructure(targetConn, map, targetTableName);
 
-                // КРОК 2: Синхронізація даних
-                // Якщо структура змінилася, таблиця пуста, тому це буде повне завантаження
-                SyncTableData(sourceConn, targetConn, map, targetTableName, structureChanged);
+                // 2. Перевірка на Full Sync
+                bool forceFullSync = map.FullSync;
+
+                // Якщо структура не змінювалася (таблиця існує і має дані), 
+                // але стоїть галочка FullSync -> Очищаємо таблицю вручну.
+                if (!structureChanged && forceFullSync)
+                {
+                    using var cmdClean = targetConn.CreateCommand();
+                    cmdClean.CommandText = $"DELETE FROM \"{targetTableName}\"";
+                    cmdClean.ExecuteNonQuery();
+                    _logger.LogInformation($"   [CLEAN] Таблиця очищена (Повна синхронізація).");
+                }
+
+                // 3. Синхронізація даних
+                // isFullLoad = true, якщо таблиця перестворена АБО очищена вручну
+                SyncTableData(sourceConn, targetConn, map, targetTableName, structureChanged || forceFullSync);
 
                 _logger.LogInformation($"[OK] Завершено для {targetTableName}");
             }
@@ -133,20 +146,56 @@ public class DatabaseSyncService
             .Where(f => f.IsUsed && !string.IsNullOrWhiteSpace(f.SourceColumn))
             .ToList();
 
-        if (syncFields.Count == 0) { _logger.LogWarning("[SKIP] Немає полів для синхронізації"); return; }
+        if (syncFields.Count == 0) { _logger.LogWarning("   [SKIP] Немає полів для синхронізації"); return; }
 
         var idField = syncFields.FirstOrDefault(f => f.TargetField.Equals(TARGET_PRIMARY_KEY, StringComparison.OrdinalIgnoreCase));
-        if (idField == null) { _logger.LogError($"[ERROR] Немає маппінгу для ID!"); return; }
+        if (idField == null) { _logger.LogError($"   [ERROR] Немає маппінгу для ID!"); return; }
 
         // 1. Читаємо 1С
         var srcCols = syncFields.Select(f => f.SourceColumn).ToList();
-        srcCols.Add($"CONVERT(BIGINT, {map.SourceVersionColumn}) AS VersionValue");
+
+        // ▼▼▼ ВИПРАВЛЕННЯ ТУТ ▼▼▼
+        // Якщо колонка версії не вказана (напр. для Регістрів), використовуємо 0
+        string versionExp = string.IsNullOrWhiteSpace(map.SourceVersionColumn)
+            ? "0"
+            : $"CONVERT(BIGINT, {map.SourceVersionColumn})";
+
+        srcCols.Add($"{versionExp} AS VersionValue");
+        // ▲▲▲ ▲▲▲
+
+        // --- ПІДГОТОВКА ЗАПИТУ ДО 1С ---
+        string sql = $"SELECT {string.Join(", ", srcCols)} FROM {map.SourceTable}";
+
+        // --- ЛОГІКА ФІЛЬТРАЦІЇ (якщо є) ---
+        if (!string.IsNullOrWhiteSpace(map.FilterGroups))
+        {
+            var parentField = syncFields.FirstOrDefault(f => f.TargetField.Equals("ParentId", StringComparison.OrdinalIgnoreCase));
+            if (parentField != null)
+            {
+                var rawIds = map.FilterGroups.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var hexIds = new List<string>();
+                foreach (var idStr in rawIds)
+                {
+                    if (Guid.TryParse(idStr, out Guid g))
+                        hexIds.Add("0x" + BitConverter.ToString(g.ToByteArray()).Replace("-", ""));
+                }
+                if (hexIds.Count > 0)
+                    sql += $" WHERE {parentField.SourceColumn} IN ({string.Join(", ", hexIds)})";
+            }
+        }
 
         var dt = new DataTable();
-        using (var da = new SqlDataAdapter($"SELECT {string.Join(", ", srcCols)} FROM {map.SourceTable}", src))
-            da.Fill(dt);
+        try
+        {
+            using (var da = new SqlDataAdapter(sql, src)) da.Fill(dt);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Помилка SQL запиту до 1С: {ex.Message}");
+            return;
+        }
 
-        // 2. Якщо це не повне перестворення, читаємо існуючі версії для порівняння
+        // 2. Якщо це не повне перестворення, читаємо існуючі версії
         var localVers = new Dictionary<string, long>();
         if (!isFullLoad)
         {
@@ -169,8 +218,6 @@ public class DatabaseSyncService
             srcIds.Add(id);
             long ver = Convert.ToInt64(row["VersionValue"]);
 
-            // Якщо це повне завантаження (isFullLoad), ми просто все вставляємо.
-            // Якщо ні - перевіряємо версію.
             bool needsUpdate = isFullLoad || !localVers.TryGetValue(id, out var localVer) || localVer != ver;
 
             if (needsUpdate)
@@ -180,8 +227,12 @@ public class DatabaseSyncService
             }
         }
 
-        // 4. Видаляємо зайве (тільки якщо це не повне перестворення, бо в новій таблиці видаляти нічого)
-        if (!isFullLoad)
+        // 4. Видалення (Тільки якщо не повне завантаження і якщо НЕМАЄ фільтру)
+        // Якщо включено фільтр по групах, видаляти відсутні записи небезпечно (бо ми завантажили не все).
+        // Якщо FullSync - таблиця вже очищена, видаляти нічого.
+        bool filterActive = !string.IsNullOrWhiteSpace(map.FilterGroups);
+
+        if (!isFullLoad && !filterActive)
         {
             foreach (var kv in localVers)
             {
@@ -199,11 +250,11 @@ public class DatabaseSyncService
         trans.Commit();
 
         if (isFullLoad)
-            _logger.LogInformation($"[DATA] Повне завантаження: {ins} записів.");
+            _logger.LogInformation($"   [DATA] Повне завантаження: {ins} записів.");
         else if (ins + upd + del > 0)
-            _logger.LogInformation($"[DATA] +{ins}, ~{upd}, -{del}");
+            _logger.LogInformation($"   [DATA] +{ins}, ~{upd}, -{del}");
         else
-            _logger.LogInformation("[DATA] Актуально.");
+            _logger.LogInformation("   [DATA] Актуально.");
     }
 
     private void UpsertRow(SqliteConnection conn, List<FieldMap> fields, DataRow row, long ver, string table)

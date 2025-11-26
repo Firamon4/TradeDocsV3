@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using TradeDocsV3.Models;
@@ -18,15 +18,31 @@ public partial class MapEditForm : Form
 
     private void MapEditForm_Load(object sender, EventArgs e)
     {
-        cmbRole.DataSource = Enum.GetValues(typeof(DataContextRole));
+        // Завантажуємо список ролей (про всяк випадок, для відображення)
+        cmbRole.DataSource = Enum.GetValues(typeof(DataContextRole))
+                                 .Cast<DataContextRole>()
+                                 .Where(r => r != DataContextRole.None)
+                                 .ToList();
+
         cmbRole.SelectedItem = _map.Role;
+
+        cmbRole.Enabled = false;
+
         txtDesc.Text = _map.Description;
         txtTable.Text = _map.SourceTable;
         txtVer.Text = _map.SourceVersionColumn;
+
+        // Нові поля
+        txtFilter.Text = _map.FilterGroups;
+        chkFullSync.Checked = _map.FullSync;
+
         PopulateGrid();
     }
 
-    private void cmbRole_SelectedIndexChanged(object sender, EventArgs e) => PopulateGrid();
+    private void cmbRole_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        PopulateGrid();
+    }
 
     private void PopulateGrid()
     {
@@ -101,6 +117,8 @@ public partial class MapEditForm : Form
         _map.Description = txtDesc.Text;
         _map.SourceTable = txtTable.Text;
         _map.SourceVersionColumn = txtVer.Text;
+        _map.FilterGroups = txtFilter.Text.Trim();
+        _map.FullSync = chkFullSync.Checked;
 
         _map.Fields.Clear();
 

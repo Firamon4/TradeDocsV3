@@ -7,282 +7,239 @@
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            pnlTop = new Panel();
-            lblTitle = new Label();
-            pnlConn = new Panel();
-            grpConn = new GroupBox();
-            label1 = new Label();
-            txtMssql = new TextBox();
-            label2 = new Label();
-            txtSqlite = new TextBox();
-            pnlMap = new Panel();
-            grpMap = new GroupBox();
-            dgvMaps = new DataGridView();
-            colRole = new DataGridViewTextBoxColumn();
-            colTable = new DataGridViewTextBoxColumn();
-            colDesc = new DataGridViewTextBoxColumn();
-            pnlActions = new Panel();
-            btnAdd = new Button();
-            btnEdit = new Button();
-            btnDel = new Button();
-            pnlBottom = new Panel();
-            btnSave = new Button();
-            pnlTop.SuspendLayout();
-            pnlConn.SuspendLayout();
-            grpConn.SuspendLayout();
-            pnlMap.SuspendLayout();
-            grpMap.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dgvMaps).BeginInit();
-            pnlActions.SuspendLayout();
-            pnlBottom.SuspendLayout();
-            SuspendLayout();
+            System.Windows.Forms.DataGridViewCellStyle gridHeaderStyle = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle gridHeaderStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+
+            this.pnlBottom = new System.Windows.Forms.Panel();
+            this.btnSave = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
+
+            this.tabControl = new System.Windows.Forms.TabControl();
+            this.tabConn = new System.Windows.Forms.TabPage();
+            this.tabMap = new System.Windows.Forms.TabPage();
+            this.tabUsers = new System.Windows.Forms.TabPage();
+
+            // --- Tab 1: Connections ---
+            this.grpConn = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtMssql = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtSqlite = new System.Windows.Forms.TextBox();
+            this.chkEncrypt = new System.Windows.Forms.CheckBox();
+
+            // --- Tab 2: Mapping ---
+            this.dgvMaps = new System.Windows.Forms.DataGridView();
+
+            // ІНІЦІАЛІЗАЦІЯ КОЛОНОК (Створюємо об'єкти, щоб не було NullReference)
+            this.colMapRole = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colMapTable = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colMapVer = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colMapFilter = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colMapFull = new System.Windows.Forms.DataGridViewCheckBoxColumn(); // Галочка
+            this.colMapFieldsCount = new System.Windows.Forms.DataGridViewTextBoxColumn(); // Текст
+            this.colMapDesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
+            this.pnlMapActions = new System.Windows.Forms.Panel();
+            this.btnAddMap = new System.Windows.Forms.Button();
+            this.btnEditMap = new System.Windows.Forms.Button();
+            this.btnDelMap = new System.Windows.Forms.Button();
+
+            // --- Tab 3: Users ---
+            this.dgvUsers = new System.Windows.Forms.DataGridView();
+            this.colUserLogin = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colUserRole = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colUserActive = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colUserLast = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
+            this.pnlUserActions = new System.Windows.Forms.Panel();
+            this.btnAddUser = new System.Windows.Forms.Button();
+            this.btnEditUser = new System.Windows.Forms.Button();
+            this.btnDelUser = new System.Windows.Forms.Button();
+
+            this.pnlBottom.SuspendLayout();
+            this.tabControl.SuspendLayout();
+            this.tabConn.SuspendLayout();
+            this.grpConn.SuspendLayout();
+            this.tabMap.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMaps)).BeginInit();
+            this.pnlMapActions.SuspendLayout();
+            this.tabUsers.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).BeginInit();
+            this.pnlUserActions.SuspendLayout();
+            this.SuspendLayout();
+
             // 
-            // pnlTop
+            // pnlBottom (Кнопки)
             // 
-            pnlTop.BackColor = Color.White;
-            pnlTop.Controls.Add(lblTitle);
-            pnlTop.Dock = DockStyle.Top;
-            pnlTop.Location = new Point(0, 0);
-            pnlTop.Name = "pnlTop";
-            pnlTop.Size = new Size(500, 50);
-            pnlTop.TabIndex = 2;
-            // 
-            // lblTitle
-            // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            lblTitle.Location = new Point(15, 15);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(187, 21);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "Налаштування системи";
-            // 
-            // pnlConn
-            // 
-            pnlConn.Controls.Add(grpConn);
-            pnlConn.Dock = DockStyle.Top;
-            pnlConn.Location = new Point(0, 50);
-            pnlConn.Name = "pnlConn";
-            pnlConn.Padding = new Padding(10);
-            pnlConn.Size = new Size(500, 100);
-            pnlConn.TabIndex = 1;
-            // 
-            // grpConn
-            // 
-            grpConn.Controls.Add(label1);
-            grpConn.Controls.Add(txtMssql);
-            grpConn.Controls.Add(label2);
-            grpConn.Controls.Add(txtSqlite);
-            grpConn.Dock = DockStyle.Fill;
-            grpConn.Location = new Point(10, 10);
-            grpConn.Name = "grpConn";
-            grpConn.Size = new Size(480, 80);
-            grpConn.TabIndex = 0;
-            grpConn.TabStop = false;
-            grpConn.Text = "Підключення до Баз Даних";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.ForeColor = Color.Gray;
-            label1.Location = new Point(15, 25);
-            label1.Name = "label1";
-            label1.Size = new Size(73, 15);
-            label1.TabIndex = 0;
-            label1.Text = "MSSQL (1C):";
-            // 
-            // txtMssql
-            // 
-            txtMssql.Location = new Point(100, 22);
-            txtMssql.Name = "txtMssql";
-            txtMssql.Size = new Size(350, 23);
-            txtMssql.TabIndex = 1;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.ForeColor = Color.Gray;
-            label2.Location = new Point(15, 55);
-            label2.Name = "label2";
-            label2.Size = new Size(83, 15);
-            label2.TabIndex = 2;
-            label2.Text = "SQLite (Local):";
-            // 
-            // txtSqlite
-            // 
-            txtSqlite.Location = new Point(100, 52);
-            txtSqlite.Name = "txtSqlite";
-            txtSqlite.Size = new Size(350, 23);
-            txtSqlite.TabIndex = 3;
-            // 
-            // pnlMap
-            // 
-            pnlMap.Controls.Add(grpMap);
-            pnlMap.Dock = DockStyle.Fill;
-            pnlMap.Location = new Point(0, 150);
-            pnlMap.Name = "pnlMap";
-            pnlMap.Padding = new Padding(10);
-            pnlMap.Size = new Size(500, 350);
-            pnlMap.TabIndex = 0;
-            // 
-            // grpMap
-            // 
-            grpMap.Controls.Add(dgvMaps);
-            grpMap.Controls.Add(pnlActions);
-            grpMap.Dock = DockStyle.Fill;
-            grpMap.Location = new Point(10, 10);
-            grpMap.Name = "grpMap";
-            grpMap.Size = new Size(480, 330);
-            grpMap.TabIndex = 0;
-            grpMap.TabStop = false;
-            grpMap.Text = "Маппінг Даних (Ролі таблиць)";
-            // 
-            // dgvMaps
-            // 
-            dgvMaps.AllowUserToAddRows = false;
-            dgvMaps.BackgroundColor = Color.White;
-            dgvMaps.BorderStyle = BorderStyle.None;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(245, 245, 245);
-            dataGridViewCellStyle1.Font = new Font("Segoe UI Semibold", 9F);
-            dgvMaps.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            dgvMaps.Columns.AddRange(new DataGridViewColumn[] { colRole, colTable, colDesc });
-            dgvMaps.Dock = DockStyle.Fill;
-            dgvMaps.EnableHeadersVisualStyles = false;
-            dgvMaps.Location = new Point(3, 19);
-            dgvMaps.Name = "dgvMaps";
-            dgvMaps.RowHeadersVisible = false;
-            dgvMaps.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvMaps.Size = new Size(474, 268);
-            dgvMaps.TabIndex = 0;
-            // 
-            // colRole
-            // 
-            colRole.HeaderText = "Роль";
-            colRole.Name = "colRole";
-            colRole.Width = 120;
-            // 
-            // colTable
-            // 
-            colTable.HeaderText = "Таблиця 1С";
-            colTable.Name = "colTable";
-            colTable.Width = 150;
-            // 
-            // colDesc
-            // 
-            colDesc.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            colDesc.HeaderText = "Опис";
-            colDesc.Name = "colDesc";
-            // 
-            // pnlActions
-            // 
-            pnlActions.Controls.Add(btnAdd);
-            pnlActions.Controls.Add(btnEdit);
-            pnlActions.Controls.Add(btnDel);
-            pnlActions.Dock = DockStyle.Bottom;
-            pnlActions.Location = new Point(3, 287);
-            pnlActions.Name = "pnlActions";
-            pnlActions.Size = new Size(474, 40);
-            pnlActions.TabIndex = 1;
-            // 
-            // btnAdd
-            // 
-            btnAdd.BackColor = Color.SeaGreen;
-            btnAdd.FlatAppearance.BorderSize = 0;
-            btnAdd.FlatStyle = FlatStyle.Flat;
-            btnAdd.ForeColor = Color.White;
-            btnAdd.Location = new Point(5, 5);
-            btnAdd.Name = "btnAdd";
-            btnAdd.Size = new Size(80, 30);
-            btnAdd.TabIndex = 0;
-            btnAdd.Text = "➕ Додати";
-            btnAdd.UseVisualStyleBackColor = false;
-            btnAdd.Click += btnAdd_Click;
-            // 
-            // btnEdit
-            // 
-            btnEdit.BackColor = Color.SteelBlue;
-            btnEdit.FlatAppearance.BorderSize = 0;
-            btnEdit.FlatStyle = FlatStyle.Flat;
-            btnEdit.ForeColor = Color.White;
-            btnEdit.Location = new Point(90, 5);
-            btnEdit.Name = "btnEdit";
-            btnEdit.Size = new Size(80, 30);
-            btnEdit.TabIndex = 1;
-            btnEdit.Text = "✎ Змінити";
-            btnEdit.UseVisualStyleBackColor = false;
-            btnEdit.Click += btnEdit_Click;
-            // 
-            // btnDel
-            // 
-            btnDel.BackColor = Color.IndianRed;
-            btnDel.FlatAppearance.BorderSize = 0;
-            btnDel.FlatStyle = FlatStyle.Flat;
-            btnDel.ForeColor = Color.White;
-            btnDel.Location = new Point(175, 5);
-            btnDel.Name = "btnDel";
-            btnDel.Size = new Size(80, 30);
-            btnDel.TabIndex = 2;
-            btnDel.Text = "🗑 Видалити";
-            btnDel.UseVisualStyleBackColor = false;
-            btnDel.Click += btnDel_Click;
-            // 
-            // pnlBottom
-            // 
-            pnlBottom.BackColor = Color.WhiteSmoke;
-            pnlBottom.Controls.Add(btnSave);
-            pnlBottom.Dock = DockStyle.Bottom;
-            pnlBottom.Location = new Point(0, 500);
-            pnlBottom.Name = "pnlBottom";
-            pnlBottom.Size = new Size(500, 50);
-            pnlBottom.TabIndex = 3;
-            // 
+            this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlBottom.Height = 60;
+            this.pnlBottom.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.pnlBottom.Controls.Add(this.btnCancel);
+            this.pnlBottom.Controls.Add(this.btnSave);
+            // Верхня межа для краси
+            this.pnlBottom.Padding = new System.Windows.Forms.Padding(0, 1, 0, 0);
+
             // btnSave
+            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSave.Location = new System.Drawing.Point(560, 12);
+            this.btnSave.Size = new System.Drawing.Size(110, 35);
+            this.btnSave.Text = "💾 Зберегти";
+            this.btnSave.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btnSave.ForeColor = System.Drawing.Color.White;
+            this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+
+            // btnCancel
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Location = new System.Drawing.Point(680, 12);
+            this.btnCancel.Size = new System.Drawing.Size(90, 35);
+            this.btnCancel.Text = "Закрити";
+            this.btnCancel.BackColor = System.Drawing.Color.LightGray;
+            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+
             // 
-            btnSave.BackColor = Color.DodgerBlue;
-            btnSave.Dock = DockStyle.Right;
-            btnSave.FlatAppearance.BorderSize = 0;
-            btnSave.FlatStyle = FlatStyle.Flat;
-            btnSave.ForeColor = Color.White;
-            btnSave.Location = new Point(0, 0);
-            btnSave.Name = "btnSave";
-            btnSave.Size = new Size(500, 50);
-            btnSave.TabIndex = 0;
-            btnSave.Text = "💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ";
-            btnSave.UseVisualStyleBackColor = false;
-            btnSave.Click += btnSave_Click;
+            // tabControl
             // 
-            // SettingsForm
-            // 
-            ClientSize = new Size(500, 550);
-            Controls.Add(pnlMap);
-            Controls.Add(pnlConn);
-            Controls.Add(pnlTop);
-            Controls.Add(pnlBottom);
-            Font = new Font("Segoe UI", 9F);
-            Name = "SettingsForm";
-            StartPosition = FormStartPosition.CenterParent;
-            Text = "Налаштування";
-            Load += SettingsForm_Load;
-            pnlTop.ResumeLayout(false);
-            pnlTop.PerformLayout();
-            pnlConn.ResumeLayout(false);
-            grpConn.ResumeLayout(false);
-            grpConn.PerformLayout();
-            pnlMap.ResumeLayout(false);
-            grpMap.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)dgvMaps).EndInit();
-            pnlActions.ResumeLayout(false);
-            pnlBottom.ResumeLayout(false);
-            ResumeLayout(false);
+            this.tabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl.Controls.Add(this.tabConn);
+            this.tabControl.Controls.Add(this.tabMap);
+            this.tabControl.Controls.Add(this.tabUsers);
+            this.tabControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tabControl.ItemSize = new System.Drawing.Size(120, 30);
+            this.tabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+
+            // TAB 1
+            this.tabConn.Text = "🔌 Підключення";
+            this.tabConn.Padding = new System.Windows.Forms.Padding(15);
+            this.tabConn.BackColor = System.Drawing.Color.White;
+            this.tabConn.Controls.Add(this.grpConn);
+
+            this.grpConn.Dock = System.Windows.Forms.DockStyle.Top;
+            this.grpConn.Height = 200;
+            this.grpConn.Text = "Параметри баз даних";
+            this.grpConn.Controls.Add(this.label1); this.grpConn.Controls.Add(this.txtMssql);
+            this.grpConn.Controls.Add(this.label2); this.grpConn.Controls.Add(this.txtSqlite);
+            this.grpConn.Controls.Add(this.chkEncrypt);
+
+            this.label1.Text = "Рядок підключення до 1С (MSSQL):"; this.label1.Location = new System.Drawing.Point(20, 30); this.label1.AutoSize = true;
+            this.txtMssql.Location = new System.Drawing.Point(20, 50); this.txtMssql.Size = new System.Drawing.Size(700, 23);
+            this.label2.Text = "Рядок підключення до локальної бази (SQLite):"; this.label2.Location = new System.Drawing.Point(20, 90); this.label2.AutoSize = true;
+            this.txtSqlite.Location = new System.Drawing.Point(20, 110); this.txtSqlite.Size = new System.Drawing.Size(700, 23);
+            this.chkEncrypt.Text = "Шифрувати рядки підключення у файлі налаштувань";
+            this.chkEncrypt.Location = new System.Drawing.Point(20, 150); this.chkEncrypt.AutoSize = true;
+
+            // TAB 2
+            this.tabMap.Text = "🗂 Структура даних";
+            this.tabMap.BackColor = System.Drawing.Color.White;
+            this.tabMap.Controls.Add(this.dgvMaps);
+            this.tabMap.Controls.Add(this.pnlMapActions);
+
+            this.dgvMaps.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvMaps.BackgroundColor = System.Drawing.Color.White;
+            this.dgvMaps.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvMaps.AllowUserToAddRows = false;
+            this.dgvMaps.RowHeadersVisible = false;
+            this.dgvMaps.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+
+            gridHeaderStyle.BackColor = System.Drawing.Color.FromArgb(245, 245, 245);
+            gridHeaderStyle.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.dgvMaps.ColumnHeadersDefaultCellStyle = gridHeaderStyle;
+            this.dgvMaps.ColumnHeadersHeight = 35;
+
+            // ВАЖЛИВО: Порядок колонок ТУТ має співпадати з SettingsForm.cs (RefreshMaps)
+            // 0:Role, 1:Table, 2:Ver, 3:Filter, 4:Full(Check), 5:Count(Text), 6:Desc
+            this.dgvMaps.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                this.colMapRole,
+                this.colMapTable,
+                this.colMapVer,
+                this.colMapFilter,
+                this.colMapFull,        // Чекбокс (індекс 4)
+                this.colMapFieldsCount, // Текст (індекс 5)
+                this.colMapDesc
+            });
+
+            this.colMapRole.HeaderText = "Роль"; this.colMapRole.Width = 140;
+            this.colMapTable.HeaderText = "Таблиця 1С"; this.colMapTable.Width = 180;
+            this.colMapVer.HeaderText = "Версія"; this.colMapVer.Width = 80;
+            this.colMapFilter.HeaderText = "Фільтр"; this.colMapFilter.Width = 60; this.colMapFilter.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colMapFull.HeaderText = "Full"; this.colMapFull.Width = 40; this.colMapFull.ReadOnly = true;
+            this.colMapFieldsCount.HeaderText = "Полів"; this.colMapFieldsCount.Width = 60; this.colMapFieldsCount.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colMapDesc.HeaderText = "Опис"; this.colMapDesc.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+
+            // Buttons Map
+            this.pnlMapActions.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlMapActions.Height = 45;
+            this.pnlMapActions.Padding = new System.Windows.Forms.Padding(5);
+            this.pnlMapActions.Controls.Add(this.btnAddMap); this.pnlMapActions.Controls.Add(this.btnEditMap); this.pnlMapActions.Controls.Add(this.btnDelMap);
+
+            this.btnAddMap.Text = "➕ Додати"; this.btnAddMap.Location = new System.Drawing.Point(5, 8); this.btnAddMap.Size = new System.Drawing.Size(90, 30); this.btnAddMap.Click += new System.EventHandler(this.btnAddMap_Click);
+            this.btnEditMap.Text = "✎ Змінити"; this.btnEditMap.Location = new System.Drawing.Point(100, 8); this.btnEditMap.Size = new System.Drawing.Size(90, 30); this.btnEditMap.Click += new System.EventHandler(this.btnEditMap_Click);
+            this.btnDelMap.Text = "🗑 Видалити"; this.btnDelMap.Location = new System.Drawing.Point(195, 8); this.btnDelMap.Size = new System.Drawing.Size(90, 30); this.btnDelMap.Click += new System.EventHandler(this.btnDelMap_Click);
+
+            // TAB 3
+            this.tabUsers.Text = "👥 Користувачі";
+            this.tabUsers.BackColor = System.Drawing.Color.White;
+            this.tabUsers.Controls.Add(this.dgvUsers);
+            this.tabUsers.Controls.Add(this.pnlUserActions);
+
+            this.dgvUsers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvUsers.BackgroundColor = System.Drawing.Color.White;
+            this.dgvUsers.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvUsers.AllowUserToAddRows = false; this.dgvUsers.RowHeadersVisible = false; this.dgvUsers.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvUsers.ColumnHeadersDefaultCellStyle = gridHeaderStyle;
+            this.dgvUsers.ColumnHeadersHeight = 35;
+            this.dgvUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { this.colUserLogin, this.colUserRole, this.colUserActive, this.colUserLast });
+            this.colUserLogin.HeaderText = "Логін"; this.colUserLogin.DataPropertyName = "Login"; this.colUserLogin.Width = 150;
+            this.colUserRole.HeaderText = "Роль"; this.colUserRole.DataPropertyName = "Role"; this.colUserRole.Width = 120;
+            this.colUserActive.HeaderText = "Актив"; this.colUserActive.DataPropertyName = "IsActive"; this.colUserActive.Width = 60;
+            this.colUserLast.HeaderText = "Останній вхід"; this.colUserLast.DataPropertyName = "LastLoginAt"; this.colUserLast.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+
+            this.pnlUserActions.Dock = System.Windows.Forms.DockStyle.Top; this.pnlUserActions.Height = 45; this.pnlUserActions.Padding = new System.Windows.Forms.Padding(5);
+            this.pnlUserActions.Controls.Add(this.btnAddUser); this.pnlUserActions.Controls.Add(this.btnEditUser); this.pnlUserActions.Controls.Add(this.btnDelUser);
+            this.btnAddUser.Text = "➕ Додати"; this.btnAddUser.Location = new System.Drawing.Point(5, 8); this.btnAddUser.Size = new System.Drawing.Size(90, 30); this.btnAddUser.Click += new System.EventHandler(this.btnAddUser_Click);
+            this.btnEditUser.Text = "✎ Змінити"; this.btnEditUser.Location = new System.Drawing.Point(100, 8); this.btnEditUser.Size = new System.Drawing.Size(90, 30); this.btnEditUser.Click += new System.EventHandler(this.btnEditUser_Click);
+            this.btnDelUser.Text = "🗑 Видалити"; this.btnDelUser.Location = new System.Drawing.Point(195, 8); this.btnDelUser.Size = new System.Drawing.Size(90, 30); this.btnDelUser.Click += new System.EventHandler(this.btnDelUser_Click);
+
+            // Form
+            this.ClientSize = new System.Drawing.Size(800, 500);
+            // ВАЖЛИВО: Спочатку TabControl, потім pnlBottom, щоб панель була "поверх" (або знизу за Dock)
+            this.Controls.Add(this.tabControl);
+            this.Controls.Add(this.pnlBottom);
+            this.Text = "Налаштування системи";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
+
+            this.pnlBottom.ResumeLayout(false);
+            this.tabControl.ResumeLayout(false);
+            this.tabConn.ResumeLayout(false);
+            this.grpConn.ResumeLayout(false); this.grpConn.PerformLayout();
+            this.tabMap.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMaps)).EndInit();
+            this.pnlMapActions.ResumeLayout(false);
+            this.tabUsers.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).EndInit();
+            this.pnlUserActions.ResumeLayout(false);
+            this.ResumeLayout(false);
         }
 
-        private System.Windows.Forms.Panel pnlTop, pnlConn, pnlMap, pnlBottom, pnlActions;
-        private System.Windows.Forms.Label lblTitle, label1, label2;
-        private System.Windows.Forms.GroupBox grpConn, grpMap;
+        private System.Windows.Forms.TabControl tabControl;
+        private System.Windows.Forms.TabPage tabConn, tabMap, tabUsers;
+        private System.Windows.Forms.Panel pnlBottom;
+        private System.Windows.Forms.Button btnSave, btnCancel;
+        private System.Windows.Forms.GroupBox grpConn;
         private System.Windows.Forms.TextBox txtMssql, txtSqlite;
+        private System.Windows.Forms.Label label1, label2;
+        private System.Windows.Forms.CheckBox chkEncrypt;
         private System.Windows.Forms.DataGridView dgvMaps;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colRole, colTable, colDesc;
-        private System.Windows.Forms.Button btnAdd, btnEdit, btnDel, btnSave;
+        private System.Windows.Forms.Panel pnlMapActions;
+        private System.Windows.Forms.Button btnAddMap, btnEditMap, btnDelMap;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colMapRole, colMapTable, colMapVer, colMapFilter, colMapFieldsCount, colMapDesc;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn colMapFull;
+        private System.Windows.Forms.DataGridView dgvUsers;
+        private System.Windows.Forms.Panel pnlUserActions;
+        private System.Windows.Forms.Button btnAddUser, btnEditUser, btnDelUser;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colUserLogin, colUserRole, colUserLast;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn colUserActive;
     }
 }

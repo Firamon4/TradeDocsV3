@@ -39,7 +39,7 @@ public partial class DocumentEditorForm : Form
         txtNumber.Text = _docId ?? "Новий";
 
         // Завантажуємо каталог
-        await LoadCatalog(DataContextRole.Nomenclature);
+        await LoadCatalog(DataContextRole.Номенклатура);
     }
 
     private async Task LoadCatalog(DataContextRole role)
