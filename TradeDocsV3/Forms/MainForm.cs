@@ -93,5 +93,12 @@ public partial class MainForm : Form
         frm.ShowDialog();
     }
 
+    private void menuService_Click(object sender, EventArgs e)
+    {
+        if (_userRole != "Admin") { MessageBox.Show("Тільки для адмінів."); return; }
+        using var frm = new ServiceConfigForm();
+        frm.ShowDialog();
+    }
+
     private void menuExit_Click(object sender, EventArgs e) => Application.Exit();
 }

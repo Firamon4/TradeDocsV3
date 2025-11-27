@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Windows.Forms;
 using TradeDocsV3.Data;
 using TradeDocsV3.Models;
@@ -11,154 +15,70 @@ public partial class SettingsForm : Form
 {
     private readonly AppSettings _settings;
     private readonly UserRepository _userRepo;
-    private bool _isDirty = false;
+
+    // Прапорці змін для кожної вкладки
+    private bool _dirtyConn = false;
+    private bool _dirtyMap = false;
+
+    // Тимчасовий список для маппінгів (редагуємо його, а не основний конфіг, поки не збережемо)
+    private List<DataContextMap> _tempMappings = new();
 
     public SettingsForm(AppSettings settings)
     {
         InitializeComponent();
         _settings = settings;
         _userRepo = new UserRepository(_settings);
+
+        // Клонуємо маппінги, щоб можна було "Відмінити зміни"
+        CloneMappings();
+
+        this.Load += SettingsForm_Load;
         this.FormClosing += SettingsForm_FormClosing;
+    }
+
+    private void CloneMappings()
+    {
+        // Глибоке копіювання списку маппінгів через JSON (найпростіший спосіб)
+        string json = JsonSerializer.Serialize(_settings.Sync.Mappings);
+        _tempMappings = JsonSerializer.Deserialize<List<DataContextMap>>(json) ?? new List<DataContextMap>();
     }
 
     private void SettingsForm_Load(object sender, EventArgs e)
     {
+        // TAB 1 LOAD
         txtMssql.Text = _settings.Database.EncryptedMSSQL;
         txtSqlite.Text = _settings.Database.EncryptedSQLite;
         chkEncrypt.Checked = _settings.Security.UseEncryption;
 
-        RefreshMaps();
-        RefreshUsers();
+        txtMssql.TextChanged += (s, a) => SetDirtyConn();
+        txtSqlite.TextChanged += (s, a) => SetDirtyConn();
+        chkEncrypt.CheckedChanged += (s, a) => SetDirtyConn();
 
-        txtMssql.TextChanged += (s, a) => SetDirty();
-        txtSqlite.TextChanged += (s, a) => SetDirty();
-        chkEncrypt.CheckedChanged += (s, a) => SetDirty();
+        // TAB 2 LOAD
+        RefreshMapsGrid();
 
-        _isDirty = false;
-        UpdateSaveButton();
-
-        // Додаткова страховка: виносимо панель кнопок на передній план
-        pnlBottom.BringToFront();
+        _dirtyConn = false;
+        _dirtyMap = false;
+        UpdateButtons();
     }
 
-    private void SetDirty()
+    private void SetDirtyConn() { _dirtyConn = true; UpdateButtons(); }
+    private void SetDirtyMap() { _dirtyMap = true; UpdateButtons(); }
+
+    private void UpdateButtons()
     {
-        _isDirty = true;
-        UpdateSaveButton();
+        btnSaveConn.Enabled = _dirtyConn;
+        btnCancelConn.Enabled = _dirtyConn;
+
+        btnSaveMap.Enabled = _dirtyMap;
+        btnCancelMap.Enabled = _dirtyMap;
+
+        this.Text = (_dirtyConn || _dirtyMap) ? "Налаштування системи *" : "Налаштування системи";
     }
 
-    private void UpdateSaveButton()
-    {
-        btnSave.Text = _isDirty ? "💾 Зберегти *" : "💾 Зберегти";
-    }
+    // ================== TAB 1: CONNECTIONS ==================
 
-    private void SettingsForm_FormClosing(object? sender, FormClosingEventArgs e)
-    {
-        if (_isDirty)
-        {
-            var result = MessageBox.Show("У вас є незбережені зміни. Зберегти їх перед виходом?", "Увага", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-            if (result == DialogResult.Yes) SaveSettings();
-            else if (result == DialogResult.Cancel) e.Cancel = true;
-        }
-    }
-
-    // --- MAPS ---
-
-    private void RefreshMaps()
-    {
-        dgvMaps.Rows.Clear();
-        foreach (var map in _settings.Sync.Mappings)
-        {
-            // УВАГА: Порядок аргументів має співпадати з порядком колонок в Designer.cs
-            dgvMaps.Rows.Add(
-                map.Role,                                       // 0. Role
-                map.SourceTable,                                // 1. Table
-                map.SourceVersionColumn ?? "(немає)",           // 2. Ver
-                string.IsNullOrWhiteSpace(map.FilterGroups) ? "-" : "Так", // 3. Filter
-                map.FullSync,                                   // 4. Full (CheckBox) -> передаємо bool
-                $"{map.Fields.Count(f => f.IsUsed)} шт.",       // 5. Count (Text) -> передаємо string
-                map.Description                                 // 6. Desc
-            );
-        }
-    }
-
-    private void btnAddMap_Click(object sender, EventArgs e)
-    {
-        using var roleForm = new SelectRoleForm();
-        if (roleForm.ShowDialog() != DialogResult.OK) return;
-
-        var newMap = new DataContextMap { Role = roleForm.SelectedRole };
-        using var frm = new MapEditForm(newMap);
-        if (frm.ShowDialog() == DialogResult.OK)
-        {
-            _settings.Sync.Mappings.Add(newMap);
-            RefreshMaps();
-            SetDirty();
-        }
-    }
-
-    private void btnEditMap_Click(object sender, EventArgs e)
-    {
-        if (dgvMaps.SelectedRows.Count == 0) return;
-        var map = _settings.Sync.Mappings[dgvMaps.SelectedRows[0].Index];
-        using var frm = new MapEditForm(map);
-        if (frm.ShowDialog() == DialogResult.OK) { RefreshMaps(); SetDirty(); }
-    }
-
-    private void btnDelMap_Click(object sender, EventArgs e)
-    {
-        if (dgvMaps.SelectedRows.Count == 0) return;
-        _settings.Sync.Mappings.RemoveAt(dgvMaps.SelectedRows[0].Index);
-        RefreshMaps();
-        SetDirty();
-    }
-
-    // --- USERS ---
-
-    private void RefreshUsers()
-    {
-        try { dgvUsers.DataSource = _userRepo.GetAllUsers(); } catch { }
-    }
-
-    private void btnAddUser_Click(object sender, EventArgs e)
-    {
-        var newUser = new UserModel();
-        using var frm = new UserEditForm(newUser, _userRepo);
-        if (frm.ShowDialog() == DialogResult.OK)
-        {
-            try { _userRepo.SaveUser(newUser); RefreshUsers(); }
-            catch (Exception ex) { MessageBox.Show("Помилка: " + ex.Message); }
-        }
-    }
-
-    private void btnEditUser_Click(object sender, EventArgs e)
-    {
-        if (dgvUsers.SelectedRows.Count == 0) return;
-        var user = (UserModel)dgvUsers.SelectedRows[0].DataBoundItem;
-        using var frm = new UserEditForm(user, _userRepo);
-        if (frm.ShowDialog() == DialogResult.OK)
-        {
-            try { _userRepo.SaveUser(user); RefreshUsers(); }
-            catch (Exception ex) { MessageBox.Show("Помилка: " + ex.Message); }
-        }
-    }
-
-    private void btnDelUser_Click(object sender, EventArgs e)
-    {
-        if (dgvUsers.SelectedRows.Count == 0) return;
-        var user = (UserModel)dgvUsers.SelectedRows[0].DataBoundItem;
-        if (user.Login.ToLower() == "admin") { MessageBox.Show("Адміна видаляти не можна!"); return; }
-
-        if (MessageBox.Show($"Видалити {user.Login}?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
-        {
-            try { _userRepo.DeleteUser(user.Id); RefreshUsers(); }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
-        }
-    }
-
-    // --- MAIN ---
-
-    private void SaveSettings()
+    private void btnSaveConn_Click(object sender, EventArgs e)
     {
         _settings.Database.EncryptedMSSQL = txtMssql.Text.Trim();
         _settings.Database.EncryptedSQLite = txtSqlite.Text.Trim();
@@ -167,12 +87,178 @@ public partial class SettingsForm : Form
         ConfigManager.Save(_settings);
         try { _userRepo.EnsureMssqlTables(); } catch { }
 
-        _isDirty = false;
-        UpdateSaveButton();
-        MessageBox.Show("Збережено!");
-        Close();
+        _dirtyConn = false;
+        UpdateButtons();
+        MessageBox.Show("Налаштування підключення збережено!", "Успіх");
     }
 
-    private void btnSave_Click(object sender, EventArgs e) => SaveSettings();
-    private void btnCancel_Click(object sender, EventArgs e) => Close();
+    private void btnCancelConn_Click(object sender, EventArgs e)
+    {
+        // Відкочуємо UI до значень з конфігу
+        txtMssql.Text = _settings.Database.EncryptedMSSQL;
+        txtSqlite.Text = _settings.Database.EncryptedSQLite;
+        chkEncrypt.Checked = _settings.Security.UseEncryption;
+
+        _dirtyConn = false;
+        UpdateButtons();
+    }
+
+    // ================== TAB 2: MAPPING ==================
+
+    private void RefreshMapsGrid()
+    {
+        dgvMaps.Rows.Clear();
+        foreach (var map in _tempMappings)
+        {
+            dgvMaps.Rows.Add(
+                map.Role,
+                map.SourceTable,
+                map.SourceVersionColumn ?? "-",
+                string.IsNullOrWhiteSpace(map.FilterGroups) ? "-" : "Так",
+                map.FullSync,
+                $"{map.Fields.Count(f => f.IsUsed)} шт."
+            );
+            dgvMaps.Rows[dgvMaps.Rows.Count - 1].Tag = map;
+        }
+    }
+
+    private void btnLoadJson_Click(object sender, EventArgs e)
+    {
+        if (_dirtyMap && MessageBox.Show("Є незбережені зміни. Завантаження файлу перезапише їх. Продовжити?", "Увага", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            return;
+
+        using var ofd = new OpenFileDialog { Filter = "JSON (*.json)|*.json", Title = "Оберіть structure.json" };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        List<OneCTableInfo> structure1C;
+        try
+        {
+            var json = File.ReadAllText(ofd.FileName);
+            structure1C = JsonSerializer.Deserialize<List<OneCTableInfo>>(json) ?? new();
+        }
+        catch (Exception ex) { MessageBox.Show("Помилка читання файлу: " + ex.Message); return; }
+
+        // Очищаємо і заповнюємо _tempMappings
+        _tempMappings.Clear();
+        int count = 0;
+
+        foreach (DataContextRole role in Enum.GetValues(typeof(DataContextRole)))
+        {
+            if (role == DataContextRole.None) continue;
+
+            string name1C = GetOneCName(role);
+            var found = structure1C.FirstOrDefault(x => x.Name.Equals(name1C, StringComparison.OrdinalIgnoreCase));
+
+            if (found != null)
+            {
+                var newMap = new DataContextMap { Role = role, SourceTable = found.SQLTable, Description = "Auto-Loaded" };
+
+                // Версія
+                if (found.Fields.Values.Contains("_Version")) newMap.SourceVersionColumn = "_Version";
+                else if (found.Fields.ContainsKey("Version")) newMap.SourceVersionColumn = found.Fields["Version"];
+                else newMap.SourceVersionColumn = "0";
+
+                // Поля
+                foreach (var req in DataContextRequirements.GetRequiredFields(role))
+                {
+                    string src = FindColumnIn1C(req, found.Fields);
+                    if (!string.IsNullOrEmpty(src))
+                        newMap.Fields.Add(new FieldMap { TargetField = req, SourceColumn = src, IsUsed = true });
+                }
+
+                _tempMappings.Add(newMap);
+                count++;
+            }
+        }
+
+        RefreshMapsGrid();
+        SetDirtyMap();
+        MessageBox.Show($"Завантажено налаштування для {count} таблиць. Не забудьте натиснути 'Зберегти зміни'!", "Успіх");
+    }
+
+    private void btnEditMap_Click(object sender, EventArgs e)
+    {
+        if (dgvMaps.SelectedRows.Count == 0) return;
+        var map = dgvMaps.SelectedRows[0].Tag as DataContextMap;
+        if (map == null) return;
+
+        using var frm = new MapEditForm(map);
+        if (frm.ShowDialog() == DialogResult.OK)
+        {
+            RefreshMapsGrid();
+            SetDirtyMap();
+        }
+    }
+
+    private void btnSaveMap_Click(object sender, EventArgs e)
+    {
+        // Записуємо зміни з _tempMappings в реальний конфіг
+        _settings.Sync.Mappings = JsonSerializer.Deserialize<List<DataContextMap>>(JsonSerializer.Serialize(_tempMappings))!;
+        ConfigManager.Save(_settings);
+
+        _dirtyMap = false;
+        UpdateButtons();
+        MessageBox.Show("Структуру даних збережено!", "Успіх");
+    }
+
+    private void btnCancelMap_Click(object sender, EventArgs e)
+    {
+        // Відкочуємо _tempMappings назад до стану _settings
+        CloneMappings();
+        RefreshMapsGrid();
+        _dirtyMap = false;
+        UpdateButtons();
+    }
+
+    // ================== HELPERS ==================
+
+    private string GetOneCName(DataContextRole role)
+    {
+        return role switch
+        {
+            DataContextRole.Номенклатура => "Справочник.Номенклатура",
+            DataContextRole.Контрагенти => "Справочник.Контрагенты",
+            DataContextRole.Магазини => "Справочник.Склады",
+            DataContextRole.Працівники => "Справочник.СотрудникиОрганизации",
+            DataContextRole.ОдиниціВиміру => "Справочник.ЕдиницыИзмерения",
+            DataContextRole.Замовлення => "Документ.ВнутреннийЗаказ",
+            DataContextRole.Специфікація => "Документ.Нива_СпецификацияНоменклатуры",
+            DataContextRole.РегістрЦін => "РегистрСведений.ЦеныНоменклатуры",
+
+            // Табличні частини
+            DataContextRole.Замовлення_Товари => "Документ.ВнутреннийЗаказ.ТабличнаяЧасть.Товары",
+
+            _ => ""
+        };
+    }
+
+    private string FindColumnIn1C(string app, Dictionary<string, string> fields)
+    {
+        if (app == "Id" && fields.ContainsKey("Ref")) return fields["Ref"];
+        if (app == "Name" && fields.ContainsKey("Description")) return fields["Description"];
+        if (app == "ParentId" && fields.ContainsKey("Parent")) return fields["Parent"];
+        if (app == "IsFolder" && fields.ContainsKey("IsFolder")) return fields["IsFolder"];
+        if (app == "EDRPOU" && fields.ContainsKey("КодПоЕДРПОУ")) return fields["КодПоЕДРПОУ"];
+        if (app == "DocumentId" && fields.ContainsKey("DocumentId")) return fields["DocumentId"];
+
+        foreach (var kvp in fields)
+        {
+            string k = kvp.Key.ToLower();
+            string a = app.ToLower();
+            if (a == "price" && k.Contains("цена")) return kvp.Value;
+            if (a == "sum" && k.Contains("сумма")) return kvp.Value;
+            if (a == "quantity" && k.Contains("количество")) return kvp.Value;
+            if ((a == "itemid" || a == "contractorid") && (k.Contains("номенклатура") || k.Contains("контрагент") || k == "ref")) return kvp.Value;
+        }
+        return "";
+    }
+
+    private void SettingsForm_FormClosing(object? sender, FormClosingEventArgs e)
+    {
+        if (_dirtyConn || _dirtyMap)
+        {
+            var res = MessageBox.Show("Є незбережені зміни! Ви впевнені, що хочете вийти без збереження?", "Увага", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (res == DialogResult.No) e.Cancel = true;
+        }
+    }
 }

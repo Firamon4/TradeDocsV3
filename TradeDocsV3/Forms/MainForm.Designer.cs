@@ -12,8 +12,10 @@
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             menuMain = new MenuStrip();
             toolStripMenuItem2 = new ToolStripMenuItem();
+            toolStripMenuItem4 = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripMenuItem();
+            сервісWToolStripMenuItem = new ToolStripMenuItem();
             pnlToolbar = new Panel();
             lblUserStatus = new Label();
             btnNew = new Button();
@@ -26,7 +28,6 @@
             colDate = new DataGridViewTextBoxColumn();
             colSum = new DataGridViewTextBoxColumn();
             colStatus = new DataGridViewTextBoxColumn();
-            toolStripMenuItem4 = new ToolStripMenuItem();
             menuMain.SuspendLayout();
             pnlToolbar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDocs).BeginInit();
@@ -35,7 +36,7 @@
             // menuMain
             // 
             menuMain.BackColor = Color.White;
-            menuMain.Items.AddRange(new ToolStripItem[] { toolStripMenuItem2, toolStripMenuItem4, toolStripMenuItem1, toolStripMenuItem3 });
+            menuMain.Items.AddRange(new ToolStripItem[] { toolStripMenuItem2, toolStripMenuItem4, toolStripMenuItem1, toolStripMenuItem3, сервісWToolStripMenuItem });
             menuMain.Location = new Point(0, 0);
             menuMain.Name = "menuMain";
             menuMain.Size = new Size(900, 24);
@@ -47,6 +48,13 @@
             toolStripMenuItem2.Size = new Size(101, 20);
             toolStripMenuItem2.Text = "Налаштування";
             toolStripMenuItem2.Click += menuSettings_Click;
+            // 
+            // toolStripMenuItem4
+            // 
+            toolStripMenuItem4.Name = "toolStripMenuItem4";
+            toolStripMenuItem4.Size = new Size(86, 20);
+            toolStripMenuItem4.Text = "Користувачі";
+            toolStripMenuItem4.Click += menuUsers_Click;
             // 
             // toolStripMenuItem1
             // 
@@ -62,12 +70,12 @@
             toolStripMenuItem3.Text = "Вихід";
             toolStripMenuItem3.Click += menuExit_Click;
             // 
-            // toolStripMenuItem4
+            // сервісWToolStripMenuItem
             // 
-            toolStripMenuItem4.Name = "toolStripMenuItem4";
-            toolStripMenuItem4.Size = new Size(86, 20);
-            toolStripMenuItem4.Text = "Користувачі";
-            toolStripMenuItem4.Click += menuUsers_Click;
+            сервісWToolStripMenuItem.Name = "сервісWToolStripMenuItem";
+            сервісWToolStripMenuItem.Size = new Size(133, 20);
+            сервісWToolStripMenuItem.Text = "Сервіс Синхронізації";
+            сервісWToolStripMenuItem.Click += menuService_Click;
             // 
             // pnlToolbar
             // 
@@ -244,5 +252,6 @@
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem toolStripMenuItem3;
         private ToolStripMenuItem toolStripMenuItem4;
+        private ToolStripMenuItem сервісWToolStripMenuItem;
     }
 }
